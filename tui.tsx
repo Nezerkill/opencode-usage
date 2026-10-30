@@ -31,11 +31,11 @@ function errorMessage(error: unknown): string {
   ) {
     return (error as { message: string }).message
   }
-  return "Не удалось получить лимиты OpenCode Go."
+  return "Could not fetch OpenCode Go limits."
 }
 
 function footerLabel(state: FooterState): string {
-  if (state.kind === "loading") return "Go · загрузка…"
+  if (state.kind === "loading") return "Go · loading…"
   if (state.kind === "error") {
     return `Go · ${footerErrorLabel({ code: state.code, message: state.message })}`
   }
@@ -52,7 +52,7 @@ function UsageView(props: { snapshot: UsageSnapshot }) {
 
   return (
     <box flexDirection="column" padding={1}>
-      <text fg={context.theme.text.base}>OpenCode Go · лимиты</text>
+      <text fg={context.theme.text.base}>OpenCode Go · limits</text>
       <For each={WINDOW_IDS}>
         {(id) => {
           const window = props.snapshot.windows[id]
@@ -68,14 +68,14 @@ function UsageView(props: { snapshot: UsageSnapshot }) {
           return (
             <box flexDirection="column" marginTop={1}>
               <text fg={context.theme.text.base}>
-                {WINDOW_LABELS[id]} · осталось {Math.round(remaining)}%
+                {WINDOW_LABELS[id]} · {Math.round(remaining)}% left
               </text>
               <text fg={color}>
                 {progressBar(remaining)}{" "}
-                {window.status === "rate-limited" ? "лимит исчерпан" : "ok"}
+                {window.status === "rate-limited" ? "limit reached" : "ok"}
               </text>
               <text fg={context.theme.text.muted}>
-                использовано {Math.round(window.percent)}% · сброс{" "}
+                used {Math.round(window.percent)}% · reset:{" "}
                 {formatReset(window.resetsAt, Date.now())}
               </text>
             </box>
@@ -84,7 +84,7 @@ function UsageView(props: { snapshot: UsageSnapshot }) {
       </For>
       <box marginTop={1}>
         <text fg={context.theme.text.muted}>
-          Данные на {formatClock(props.snapshot.fetchedAt)} · /go — обновить
+          Updated {formatClock(props.snapshot.fetchedAt)} · /go to refresh
         </text>
       </box>
     </box>
@@ -154,7 +154,7 @@ export default Plugin.define({
       commands: [
         {
           id: "opencode-go-usage.show",
-          title: "OpenCode Go: лимиты",
+          title: "OpenCode Go: limits",
           group: "OpenCode Go",
           palette: true,
           slash: { name: "go", aliases: ["golimits"] },
@@ -167,7 +167,7 @@ export default Plugin.define({
                 message:
                   current.kind === "error"
                     ? current.message
-                    : "Не удалось получить лимиты OpenCode Go.",
+                    : "Could not fetch OpenCode Go limits.",
               })
               return
             }

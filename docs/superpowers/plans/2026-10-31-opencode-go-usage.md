@@ -16,7 +16,7 @@
 - Корень плагина: `~/.config/opencode/plugins/opencode-go-usage/`.
 - Не создавать `package.json` и `node_modules` в папке плагина: host сам резолвит `@opencode/plugin`, `solid-js`, `@opentui/*`.
 - Файлы плагина лежат в корне: `server.ts` (entrypoint), `service.ts`, `rpc.ts`, `tui.tsx`, `usage.ts`; тесты — в `test/`.
-- UI-тексты на русском; код и идентификаторы на английском.
+- UI-тексты на английском; код и идентификаторы на английском. (Исторические русские строки в примерах ниже заменены на английские в финальной реализации; источник истины — код и README.)
 - Endpoint: `https://opencode.ai/zen/go/v1/usage`, fallback `https://opencode.ai/inference/go/v1/usage`.
 - Кэш сервера: 60 000 мс. Автообновление TUI: 60 000 мс. `/go` передаёт `force: true`.
 - Проценты в API — использованные. В футере показывать остаток `100 - percent`.

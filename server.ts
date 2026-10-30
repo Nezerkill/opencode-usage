@@ -29,7 +29,7 @@ export default Plugin.define({
           }
           return context.error(
             "request_failed",
-            "Не удалось получить лимиты OpenCode Go.",
+            "Could not fetch OpenCode Go limits.",
             {},
           )
         }

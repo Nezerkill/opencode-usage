@@ -6,3 +6,4 @@
 - Server-side credential resolution and 60-second cache keyed by connection + org.
 - Graceful handling of missing login, missing Go subscription, network errors, timeouts, and invalid responses.
 - Footer error labels use RPC error codes; server logic is covered by committed tests.
+- English UI strings and error messages.

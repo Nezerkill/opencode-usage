@@ -40,13 +40,13 @@ function credentialFailure(error: unknown): UsageError {
   ) {
     return new UsageError(
       "auth_failed",
-      "Не удалось обновить вход OpenCode. Подключитесь заново через /connect.",
+      "Could not refresh the OpenCode login. Reconnect via /connect.",
     )
   }
 
   return new UsageError(
     "not_connected",
-    "Не удалось получить данные входа OpenCode. Подключитесь заново через /connect.",
+    "Could not read the OpenCode credentials. Reconnect via /connect.",
   )
 }
 
@@ -65,7 +65,7 @@ export async function resolveUsageCredential<Connection>(
   if (!connection) {
     throw new UsageError(
       "not_connected",
-      "Нет активного подключения OpenCode. Войдите через /connect.",
+      "No active OpenCode connection. Sign in via /connect.",
     )
   }
 
@@ -79,7 +79,7 @@ export async function resolveUsageCredential<Connection>(
   if (!credential) {
     throw new UsageError(
       "not_connected",
-      "Не удалось получить данные входа OpenCode. Войдите через /connect.",
+      "Could not read the OpenCode credentials. Sign in via /connect.",
     )
   }
 
@@ -93,7 +93,7 @@ export async function resolveUsageCredential<Connection>(
   if (!token) {
     throw new UsageError(
       "not_connected",
-      "Этот тип подключения OpenCode не поддерживается. Используйте вход через OpenCode Console.",
+      "This OpenCode connection type is not supported. Use an OpenCode Console login.",
     )
   }
 

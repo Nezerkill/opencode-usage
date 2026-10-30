@@ -101,7 +101,7 @@ test("fetchUsage maps a real timeout abort to request_failed", async () => {
     (error) =>
       error instanceof UsageError &&
       error.code === "request_failed" &&
-      error.message.includes("не уложился"),
+      error.message.includes("timed out"),
   )
 })
 
@@ -117,7 +117,7 @@ test("fetchUsage maps a TimeoutError from fetch to request_failed", async () => 
     (error) =>
       error instanceof UsageError &&
       error.code === "request_failed" &&
-      error.message.includes("не уложился"),
+      error.message.includes("timed out"),
   )
 })
 
@@ -135,6 +135,6 @@ test("fetchUsage maps a body-read timeout to request_failed", async () => {
     (error) =>
       error instanceof UsageError &&
       error.code === "request_failed" &&
-      error.message.includes("не уложился"),
+      error.message.includes("timed out"),
   )
 })

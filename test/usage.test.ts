@@ -43,7 +43,7 @@ test("parseUsage rejects invalid payloads", () => {
 test("remaining and footer text show remaining, not used", () => {
   const snapshot = parseUsage(payload)
   assert.equal(remainingPercent(31), 69)
-  assert.equal(footerText(snapshot), "Go · 5ч 69% · нед 0% · мес 88%")
+  assert.equal(footerText(snapshot), "Go · 5h 69% · wk 0% · mo 88%")
 })
 
 test("worst remaining and tone use thresholds 50 and 20", () => {
@@ -55,12 +55,12 @@ test("worst remaining and tone use thresholds 50 and 20", () => {
   assert.equal(toneFor(19.9), "bad")
 })
 
-test("formatReset renders Russian durations", () => {
+test("formatReset renders English durations", () => {
   const now = Date.parse("2026-10-31T00:00:00.000Z")
-  assert.equal(formatReset("2026-10-31T00:00:20.000Z", now), "сейчас")
-  assert.equal(formatReset("2026-10-31T00:05:00.000Z", now), "5м")
-  assert.equal(formatReset("2026-10-31T02:15:00.000Z", now), "2ч 15м")
-  assert.equal(formatReset("2026-11-03T04:00:00.000Z", now), "3д 4ч")
+  assert.equal(formatReset("2026-10-31T00:00:20.000Z", now), "now")
+  assert.equal(formatReset("2026-10-31T00:05:00.000Z", now), "5m")
+  assert.equal(formatReset("2026-10-31T02:15:00.000Z", now), "2h 15m")
+  assert.equal(formatReset("2026-11-03T04:00:00.000Z", now), "3d 4h")
 })
 
 test("progressBar fills proportionally", () => {
@@ -71,7 +71,7 @@ test("progressBar fills proportionally", () => {
 
 test("formatReset treats past timestamps as now", () => {
   const now = Date.parse("2026-10-31T00:00:00.000Z")
-  assert.equal(formatReset("2026-10-30T23:00:00.000Z", now), "сейчас")
+  assert.equal(formatReset("2026-10-30T23:00:00.000Z", now), "now")
 })
 
 test("usageErrorCode reads the RPC error type", () => {
@@ -83,10 +83,13 @@ test("usageErrorCode reads the RPC error type", () => {
 
 test("footerErrorLabel prefers the RPC error code over message text", () => {
   assert.equal(
-    footerErrorLabel({ code: "not_subscribed", message: "network подключение" }),
-    "нет подписки",
+    footerErrorLabel({ code: "not_subscribed", message: "network connection" }),
+    "no subscription",
   )
-  assert.equal(footerErrorLabel({ code: "auth_failed", message: "что угодно" }), "нет входа")
-  assert.equal(footerErrorLabel({ code: "request_failed", message: "подписка" }), "ошибка")
-  assert.equal(footerErrorLabel({ message: "Нет активного подключения OpenCode" }), "нет входа")
+  assert.equal(footerErrorLabel({ code: "auth_failed", message: "whatever" }), "no login")
+  assert.equal(footerErrorLabel({ code: "request_failed", message: "subscription" }), "error")
+  assert.equal(
+    footerErrorLabel({ message: "No active OpenCode connection. Sign in via /connect." }),
+    "no login",
+  )
 })

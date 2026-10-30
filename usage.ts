@@ -22,15 +22,15 @@ export class UsageParseError extends Error {
 export const WINDOW_IDS = ["rolling", "weekly", "monthly"] as const
 
 export const WINDOW_LABELS: Record<WindowID, string> = {
-  rolling: "5 часов",
-  weekly: "неделя",
-  monthly: "месяц",
+  rolling: "5 hours",
+  weekly: "week",
+  monthly: "month",
 }
 
 export const WINDOW_SHORT_LABELS: Record<WindowID, string> = {
-  rolling: "5ч",
-  weekly: "нед",
-  monthly: "мес",
+  rolling: "5h",
+  weekly: "wk",
+  monthly: "mo",
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -43,22 +43,22 @@ function clampPercent(value: number): number {
 
 function parseWindow(value: unknown, id: WindowID): UsageWindow {
   if (!isRecord(value)) {
-    throw new UsageParseError(`OpenCode Go: окно ${id} отсутствует или имеет неверный формат.`)
+    throw new UsageParseError(`OpenCode Go: ${id} window is missing or malformed.`)
   }
 
   const status = value.status
   if (status !== "ok" && status !== "rate-limited") {
-    throw new UsageParseError(`OpenCode Go: окно ${id} содержит неизвестный статус.`)
+    throw new UsageParseError(`OpenCode Go: ${id} window has an unknown status.`)
   }
 
   const percent = value.percent
   if (typeof percent !== "number" || !Number.isFinite(percent)) {
-    throw new UsageParseError(`OpenCode Go: окно ${id} содержит некорректный процент.`)
+    throw new UsageParseError(`OpenCode Go: ${id} window has an invalid percent.`)
   }
 
   const resetsAt = value.resetsAt
   if (typeof resetsAt !== "string" || Number.isNaN(Date.parse(resetsAt))) {
-    throw new UsageParseError(`OpenCode Go: окно ${id} содержит некорректное время сброса.`)
+    throw new UsageParseError(`OpenCode Go: ${id} window has an invalid reset time.`)
   }
 
   return { status, percent: clampPercent(percent), resetsAt }
@@ -66,7 +66,7 @@ function parseWindow(value: unknown, id: WindowID): UsageWindow {
 
 export function parseUsage(payload: unknown, fetchedAt = Date.now()): UsageSnapshot {
   if (!isRecord(payload) || !isRecord(payload.usage)) {
-    throw new UsageParseError("OpenCode Go: в ответе нет объекта usage.")
+    throw new UsageParseError("OpenCode Go: response is missing the usage object.")
   }
 
   const usage = payload.usage
@@ -103,23 +103,23 @@ export function progressBar(remaining: number, width = 10): string {
 
 export function formatReset(resetsAt: string, now = Date.now()): string {
   const reset = Date.parse(resetsAt)
-  if (Number.isNaN(reset)) return "сейчас"
+  if (Number.isNaN(reset)) return "now"
 
   const diff = reset - now
-  if (diff < 60_000) return "сейчас"
+  if (diff < 60_000) return "now"
 
   const minutes = Math.ceil(diff / 60_000)
-  if (minutes < 60) return `${minutes}м`
+  if (minutes < 60) return `${minutes}m`
 
   const hours = Math.floor(minutes / 60)
   const restMinutes = minutes % 60
   if (hours < 24) {
-    return restMinutes === 0 ? `${hours}ч` : `${hours}ч ${restMinutes}м`
+    return restMinutes === 0 ? `${hours}h` : `${hours}h ${restMinutes}m`
   }
 
   const days = Math.floor(hours / 24)
   const restHours = hours % 24
-  return restHours === 0 ? `${days}д` : `${days}д ${restHours}ч`
+  return restHours === 0 ? `${days}d` : `${days}d ${restHours}h`
 }
 
 export function footerText(snapshot: UsageSnapshot): string {
@@ -167,16 +167,20 @@ export function usageErrorCode(error: unknown): UsageErrorCode | undefined {
 }
 
 export function footerErrorLabel(error: { code?: UsageErrorCode; message: string }): string {
-  if (error.code === "not_connected" || error.code === "auth_failed") return "нет входа"
-  if (error.code === "not_subscribed") return "нет подписки"
-  if (error.code) return "ошибка"
+  if (error.code === "not_connected" || error.code === "auth_failed") return "no login"
+  if (error.code === "not_subscribed") return "no subscription"
+  if (error.code) return "error"
 
   const lower = error.message.toLowerCase()
-  if (lower.includes("подписк")) return "нет подписки"
-  if (lower.includes("вход") || lower.includes("войдите") || lower.includes("подключен")) {
-    return "нет входа"
+  if (lower.includes("subscription")) return "no subscription"
+  if (
+    lower.includes("sign in") ||
+    lower.includes("login") ||
+    lower.includes("credentials")
+  ) {
+    return "no login"
   }
-  return "ошибка"
+  return "error"
 }
 
 export interface FetchUsageOptions {
@@ -207,7 +211,7 @@ function isTimeoutError(error: unknown): boolean {
 function timeoutError(timeoutMs: number): UsageError {
   return new UsageError(
     "request_failed",
-    `Запрос к OpenCode Go не уложился в ${Math.round(timeoutMs / 1000)} секунд.`,
+    `OpenCode Go request timed out after ${Math.round(timeoutMs / 1000)} seconds.`,
   )
 }
 
@@ -239,7 +243,7 @@ export async function fetchUsage(options: FetchUsageOptions): Promise<UsageSnaps
         if (timedOut || isTimeoutError(error)) throw timeoutError(timeoutMs)
         throw new UsageError(
           "request_failed",
-          `Не удалось подключиться к OpenCode Go: ${errorMessage(error)}`,
+          `Could not connect to OpenCode Go: ${errorMessage(error)}`,
         )
       }
 
@@ -248,21 +252,21 @@ export async function fetchUsage(options: FetchUsageOptions): Promise<UsageSnaps
       if (response.status === 401) {
         throw new UsageError(
           "auth_failed",
-          "Вход в OpenCode недействителен. Подключитесь заново через /connect.",
+          "OpenCode login is invalid. Reconnect via /connect.",
           401,
         )
       }
       if (response.status === 403) {
         throw new UsageError(
           "not_subscribed",
-          "У аккаунта нет активной подписки OpenCode Go.",
+          "This account has no active OpenCode Go subscription.",
           403,
         )
       }
       if (!response.ok) {
         throw new UsageError(
           "request_failed",
-          `OpenCode Go вернул HTTP ${response.status}.`,
+          `OpenCode Go returned HTTP ${response.status}.`,
           response.status,
         )
       }
@@ -274,7 +278,7 @@ export async function fetchUsage(options: FetchUsageOptions): Promise<UsageSnaps
         if (timedOut || isTimeoutError(error)) throw timeoutError(timeoutMs)
         throw new UsageError(
           "invalid_response",
-          "OpenCode Go вернул неожиданный ответ.",
+          "OpenCode Go returned an unexpected response.",
           response.status,
         )
       }
@@ -285,7 +289,7 @@ export async function fetchUsage(options: FetchUsageOptions): Promise<UsageSnaps
         if (error instanceof UsageParseError) {
           throw new UsageError(
             "invalid_response",
-            "OpenCode Go вернул неожиданный ответ.",
+            "OpenCode Go returned an unexpected response.",
             response.status,
           )
         }
@@ -296,5 +300,5 @@ export async function fetchUsage(options: FetchUsageOptions): Promise<UsageSnaps
     }
   }
 
-  throw new UsageError("request_failed", "OpenCode Go недоступен.")
+  throw new UsageError("request_failed", "OpenCode Go is unavailable.")
 }
